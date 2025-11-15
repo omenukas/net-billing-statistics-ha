@@ -1,0 +1,280 @@
+###############################################################################
+# packages/02_charging_prices.yaml (FIX)
+###############################################################################
+
+input_number:
+  vat_percent:
+    name: PVM pirkimui %
+    min: 0
+    max: 30
+    step: 0.1
+    unit_of_measurement: "%"
+    mode: box
+    icon: mdi:percent
+    initial: 21
+  dedamosios_buy_eur_kwh:
+    name: Dedamosios pirkimui (€/kWh)
+    min: -0.50
+    max: 1.00
+    step: 0.0001
+    unit_of_measurement: "€/kWh"
+    mode: box
+    icon: mdi:plus-minus-variant
+    initial: 0.0000
+  dedamosios_sell_eur_kwh:
+    name: Dedamosios pardavimui (€/kWh)
+    min: -0.50
+    max: 1.00
+    step: 0.0001
+    unit_of_measurement: "€/kWh"
+    mode: box
+    icon: mdi:plus-minus-variant
+    initial: 0.0000
+
+input_boolean:
+  sell_same_as_buy:
+    name: Pardavimo kaina tokia pati kaip pirkimo
+    icon: mdi:sync
+
+# >>> VIENAS bendras TEMPLATE blokas <<<
+template:
+  - sensor:
+      # --- Kainos ir galios ---
+      - name: "np_base_price_eur_per_kwh"
+        unique_id: np_base_price_eur_per_kwh
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        state: >
+          {% set p = states('sensor.nord_pool_lt_current_price')|float(0) %}
+          {% set u = state_attr('sensor.nord_pool_lt_current_price','unit_of_measurement') or '' %}
+          {{ (p / 1000) if 'MWh' in u else p }}
+        attributes:
+          source_entity: sensor.nord_pool_lt_current_price
+
+      - name: "buy_price_eur_per_kwh"
+        unique_id: buy_price_eur_per_kwh
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        icon: mdi:cash-plus
+        state: >
+          {% set base = states('sensor.np_base_price_eur_per_kwh')|float(0) %}
+          {% set vat  = states('input_number.vat_percent')|float(21) / 100 %}
+          {% set add  = states('input_number.dedamosios_buy_eur_kwh')|float(0) %}
+          {{ base * (1 + vat) + add }}
+
+      - name: "sell_price_eur_per_kwh"
+        unique_id: sell_price_eur_per_kwh
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        icon: mdi:cash-minus
+        state: >
+          {% if is_state('input_boolean.sell_same_as_buy','on') %}
+            {{ states('sensor.buy_price_eur_per_kwh') }}
+          {% else %}
+            {% set base = states('sensor.np_base_price_eur_per_kwh')|float(0) %}
+            {% set add  = states('input_number.dedamosios_sell_eur_kwh')|float(0) %}
+            {{ base + add }}
+          {% endif %}
+
+      - name: "import_power_kw"
+        unique_id: import_power_kw
+        unit_of_measurement: "kW"
+        device_class: power
+        state_class: measurement
+        icon: mdi:transmission-tower-import
+        state: >
+          {% set w = states('sensor.solis_waveshare_meter_total_active_power')|float(0) %}
+          {{ (0 - w) / 1000 if w < 0 else 0 }}
+
+      - name: "export_power_kw"
+        unique_id: export_power_kw
+        unit_of_measurement: "kW"
+        device_class: power
+        state_class: measurement
+        icon: mdi:transmission-tower-export
+        state: >
+          {% set w = states('sensor.solis_waveshare_meter_total_active_power')|float(0) %}
+          {{ w / 1000 if w > 0 else 0 }}
+
+      - name: "import_cost_rate_eur_per_h"
+        unique_id: import_cost_rate_eur_per_h
+        unit_of_measurement: "€/h"
+        state_class: measurement
+        icon: mdi:cash-clock
+        state: >
+          {{ states('sensor.import_power_kw')|float(0) * states('sensor.buy_price_eur_per_kwh')|float(0) }}
+
+      - name: "export_revenue_rate_eur_per_h"
+        unique_id: export_revenue_rate_eur_per_h
+        unit_of_measurement: "€/h"
+        state_class: measurement
+        icon: mdi:cash-clock
+        state: >
+          {{ states('sensor.export_power_kw')|float(0) * states('sensor.sell_price_eur_per_kwh')|float(0) }}
+
+      - name: "net_cost_rate_eur_per_h"
+        unique_id: net_cost_rate_eur_per_h
+        unit_of_measurement: "€/h"
+        state_class: measurement
+        icon: mdi:scale-balance
+        state: >
+          {{ states('sensor.import_cost_rate_eur_per_h')|float(0) - states('sensor.export_revenue_rate_eur_per_h')|float(0) }}
+
+      # --- Aliasai integracijoms ir suvestinėms ---
+      - name: "import_cost_total"
+        unique_id: import_cost_total_alias
+        unit_of_measurement: "EUR"
+        state_class: total_increasing
+        icon: mdi:currency-eur
+        state: "{{ states('sensor.import_cost_total_eur')|float(0) }}"
+
+      - name: "export_revenue_total"
+        unique_id: export_revenue_total_alias
+        unit_of_measurement: "EUR"
+        state_class: total_increasing
+        icon: mdi:currency-eur
+        state: "{{ states('sensor.export_revenue_total_eur')|float(0) }}"
+
+      - name: "import_energy"
+        unique_id: import_energy_alias
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        icon: mdi:transmission-tower-import
+        state: "{{ states('sensor.import_energy_kwh')|float(0) }}"
+
+      - name: "export_energy"
+        unique_id: export_energy_alias
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        icon: mdi:transmission-tower-export
+        state: "{{ states('sensor.export_energy_kwh')|float(0) }}"
+
+      - name: "net_cost_daily"
+        unique_id: net_cost_daily
+        unit_of_measurement: "EUR"
+        icon: mdi:scale-balance
+        state: >
+          {{ states('sensor.import_cost_daily')|float(0) - states('sensor.export_revenue_daily')|float(0) }}
+
+      - name: "net_cost_monthly"
+        unique_id: net_cost_monthly
+        unit_of_measurement: "EUR"
+        icon: mdi:scale-balance
+        state: >
+          {{ states('sensor.import_cost_monthly')|float(0) - states('sensor.export_revenue_monthly')|float(0) }}
+
+      - name: "net_cost_yearly"
+        unique_id: net_cost_yearly
+        unit_of_measurement: "EUR"
+        icon: mdi:scale-balance
+        state: >
+          {{ states('sensor.import_cost_yearly')|float(0) - states('sensor.export_revenue_yearly')|float(0) }}
+
+      - name: "buy_to_sell_ratio_daily_kwh"
+        unique_id: buy_to_sell_ratio_daily_kwh
+        icon: mdi:ratio
+        state: >
+          {% set imp = states('sensor.import_energy_daily')|float(0) %}
+          {% set exp = states('sensor.export_energy_daily')|float(0) %}
+          {% if exp > 0 %} {{ (imp / exp)|round(3) }} {% else %} {{ None }} {% endif %}
+
+      - name: "buy_to_sell_ratio_monthly_kwh"
+        unique_id: buy_to_sell_ratio_monthly_kwh
+        icon: mdi:ratio
+        state: >
+          {% set imp = states('sensor.import_energy_monthly')|float(0) %}
+          {% set exp = states('sensor.export_energy_monthly')|float(0) %}
+          {% if exp > 0 %} {{ (imp / exp)|round(3) }} {% else %} {{ None }} {% endif %}
+
+      - name: "buy_to_sell_ratio_yearly_kwh"
+        unique_id: buy_to_sell_ratio_yearly_kwh
+        icon: mdi:ratio
+        state: >
+          {% set imp = states('sensor.import_energy_yearly')|float(0) %}
+          {% set exp = states('sensor.export_energy_yearly')|float(0) %}
+          {% if exp > 0 %} {{ (imp / exp)|round(3) }} {% else %} {{ None }} {% endif %}
+
+sensor:
+  - platform: integration
+    unique_id: import_energy_kwh
+    name: Import Energy kWh
+    source: sensor.import_power_kw
+    method: trapezoidal
+    unit_time: h
+    round: 3
+  - platform: integration
+    unique_id: export_energy_kwh
+    name: Export Energy kWh
+    source: sensor.export_power_kw
+    method: trapezoidal
+    unit_time: h
+    round: 3
+  - platform: integration
+    unique_id: import_cost_total_eur
+    name: Import Cost Total EUR
+    source: sensor.import_cost_rate_eur_per_h
+    method: trapezoidal
+    unit_time: h
+    round: 4
+  - platform: integration
+    unique_id: export_revenue_total_eur
+    name: Export Revenue Total EUR
+    source: sensor.export_revenue_rate_eur_per_h
+    method: trapezoidal
+    unit_time: h
+    round: 4
+
+utility_meter:
+  import_cost_daily:
+    name: Import Cost Daily
+    source: sensor.import_cost_total
+    cycle: daily
+  import_cost_monthly:
+    name: Import Cost Monthly
+    source: sensor.import_cost_total
+    cycle: monthly
+  import_cost_yearly:
+    name: Import Cost Yearly
+    source: sensor.import_cost_total
+    cycle: yearly
+
+  export_revenue_daily:
+    name: Export Revenue Daily
+    source: sensor.export_revenue_total
+    cycle: daily
+  export_revenue_monthly:
+    name: Export Revenue Monthly
+    source: sensor.export_revenue_total
+    cycle: monthly
+  export_revenue_yearly:
+    name: Export Revenue Yearly
+    source: sensor.export_revenue_total
+    cycle: yearly
+
+  import_energy_daily:
+    name: Import Energy Daily
+    source: sensor.import_energy
+    cycle: daily
+  import_energy_monthly:
+    name: Import Energy Monthly
+    source: sensor.import_energy
+    cycle: monthly
+  import_energy_yearly:
+    name: Import Energy Yearly
+    source: sensor.import_energy
+    cycle: yearly
+
+  export_energy_daily:
+    name: Export Energy Daily
+    source: sensor.export_energy
+    cycle: daily
+  export_energy_monthly:
+    name: Export Energy Monthly
+    source: sensor.export_energy
+    cycle: monthly
+  export_energy_yearly:
+    name: Export Energy Yearly
+    source: sensor.export_energy
+    cycle: yearly

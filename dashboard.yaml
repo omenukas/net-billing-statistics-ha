@@ -1,0 +1,169 @@
+type: horizontal-stack
+cards:
+  - type: vertical-stack
+    cards:
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        header:
+          show: true
+          title: NordPool elektros kainos (šiandien/rytoj)
+          show_states: true
+          colorize_states: true
+        graph_span: 48h
+        span:
+          end: day
+          offset: +1d
+        now:
+          show: true
+          label: Now
+        series:
+          - entity: sensor.electricity_prices
+            type: column
+            show:
+              extremas: true
+              in_header: before_now
+            float_precision: 3
+            data_generator: |
+              return entity.attributes.data.map((start, index) => {
+                return [new Date(start["start"]).getTime(), entity.attributes.data[index]["price"]];
+              });
+            color_threshold:
+              - value: 0
+                color: green
+              - value: 10
+                color: orange
+              - value: 30
+                color: red
+      - type: entities
+        title: Nustatymai
+        entities:
+          - entity: input_number.vat_percent
+          - entity: input_number.dedamosios_buy_eur_kwh
+          - entity: input_number.dedamosios_sell_eur_kwh
+  - type: vertical-stack
+    cards:
+      - type: entities
+        title: Suvestinės
+        entities:
+          - entity: sensor.import_cost_daily
+            name: Šiandien pirkta €
+          - entity: sensor.export_revenue_daily
+            name: Šiandien parduota €
+          - entity: sensor.net_cost_daily
+            name: Šiandienos balansas €
+          - type: section
+          - entity: sensor.import_cost_monthly
+            name: Šį mėnesį pirkta €
+          - entity: sensor.export_revenue_monthly
+            name: Šį mėnesį parduota €
+          - entity: sensor.net_cost_monthly
+            name: Šio mėnesio balansas €
+          - type: section
+          - entity: sensor.import_cost_yearly
+            name: Šiais metais pirkta €
+          - entity: sensor.export_revenue_yearly
+            name: Šiais metais paduota parduota €
+          - entity: sensor.net_cost_yearly
+            name: Šių metų balansas €
+          - type: section
+          - entity: sensor.buy_price_eur_per_kwh
+            name: Dabar pirkimo kaina (€/kWh)
+          - entity: sensor.sell_price_eur_per_kwh
+            name: Dabar pardavimo kaina (€/kWh)
+          - type: section
+          - entity: input_number.vat_percent
+          - entity: input_number.dedamosios_buy_eur_kwh
+          - entity: input_number.dedamosios_sell_eur_kwh
+  - type: vertical-stack
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:apexcharts-card
+            header:
+              title: Šiandien – pirkta / parduota
+              show: true
+            graph_span: 1d
+            span:
+              start: day
+            now:
+              show: true
+            yaxis:
+              - id: eur
+                decimals: 2
+              - id: kwh
+                opposite: true
+                decimals: 2
+            series:
+              - entity: sensor.import_cost_rate_eur_per_h
+                name: Pirkimo €/h
+                type: column
+                yaxis_id: eur
+                group_by:
+                  duration: 15min
+                  func: avg
+              - entity: sensor.export_revenue_rate_eur_per_h
+                name: Pardavimo €/h
+                type: column
+                yaxis_id: eur
+                group_by:
+                  duration: 15min
+                  func: avg
+              - entity: sensor.import_energy_daily
+                name: Pirkta kWh/h (šiandien)
+                type: line
+                yaxis_id: kwh
+                group_by:
+                  duration: 1h
+                  func: delta
+                  start_with_last: false
+              - entity: sensor.export_energy_daily
+                name: Parduota kWh/h (šiandien)
+                type: line
+                yaxis_id: kwh
+                group_by:
+                  duration: 1h
+                  func: delta
+                  start_with_last: false
+          - type: custom:apexcharts-card
+            header:
+              title: Šis mėnuo – sumos per dieną (€)
+              show: true
+              show_states: true
+              colorize_states: true
+            graph_span: 30d
+            span:
+              start: month
+            series:
+              - entity: sensor.import_cost_monthly
+                name: Pirkta šį mėnesį
+                unit: EUR
+                show:
+                  in_chart: false
+                  in_header: true
+              - entity: sensor.export_revenue_monthly
+                name: Parduota šį mėnesį
+                unit: EUR
+                show:
+                  in_chart: false
+                  in_header: true
+              - entity: sensor.import_cost_total
+                name: Pirkta €/d
+                type: column
+                group_by:
+                  duration: 1d
+                  func: delta
+                  start_with_last: false
+                show:
+                  in_header: false
+                  legend_value: false
+              - entity: sensor.export_revenue_total
+                name: Parduota €/d
+                type: column
+                group_by:
+                  duration: 1d
+                  func: delta
+                  start_with_last: false
+                show:
+                  in_header: false
+                  legend_value: false
