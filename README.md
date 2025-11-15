@@ -41,9 +41,20 @@ Tai dar ne galutinė versija ir gali būti taisytinų vietų.
 
 ## Diegimas
 Home Assistant reikalavimai:
- įdiegti [NordPool](https://www.home-assistant.io/integrations/nordpool/) integraciją.
- iš HACS įdiegti [apexcharts-card](https://github.com/RomRider/apexcharts-card) 
- NordPool kainų grafikui reikalingas templates.yaml, kuriame reikia dvejose vietose įrašyti savo `config_entry` reikšmes. Kaip gauti    `config_entry` reikšmes, rasite [čia:]([https://www.home-assistant.io/docs/tools/dev-tools/](https://www.creatingsmarthome.com/index.php/2025/09/12/home-assistant-migrating-to-the-official-nord-pool-integration/))
+ - įdiegti [NordPool](https://www.home-assistant.io/integrations/nordpool/) integraciją.
+ - iš HACS įdiegti [apexcharts-card](https://github.com/RomRider/apexcharts-card) 
+ - NordPool kainų grafikui reikalingas `templates.yaml`, kuriame reikia dvejose vietose įrašyti savo `config_entry` reikšmes. Kaip gauti    `config_entry` reikšmes, rasite [čia:](https://www.creatingsmarthome.com/index.php/2025/09/12/home-assistant-migrating-to-the-official-nord-pool-integration/)
+ - Statistikoms visi reikalingi sensoriai, helperiai ir templeitai sudėti į vieną `02_charging_prices.yaml`, kurį reikia įdėti į config/packages/ direktoriją. Jeigu dar nenaudojate /packages, tai šakninėje /config direktorijoje susikurkite `packages` direktoriją, į `configuration.yaml` įdėkite tokią eilutę:
+ ```
+homeassistant:
+  packages: !include_dir_named packages
+
+```
+Nepamirškite yaml failuose pakoreguoti pagal save inverterio sensorius. Mano pateiktuose koduose naudojami inverterio sensoriai:
+- 'sensor.solis_waveshare_meter_total_active_power`. Tai vienas sensorius, kurio teigiama reikšmė reiškia atidavimą į tinklą, o neigiama, kai perkama iš tinklo.
+- `sensor.nord_pool_lt_current_price`. Patikrinkite ar jis tikrai toks pas jus ir pakeisti jį į savo sensorių.
+Perkrauti Home Assistant.
+- į `dahboard.yaml` sudėtos visos statistikos kortelės.
 
 ---
 
