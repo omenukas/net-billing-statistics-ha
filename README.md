@@ -5,7 +5,8 @@
 Šis projektas skirtas pateikti išsamią „net billing“ elektros apskaitą Home Assistant aplinkoje:  
 pirkimo, pardavimo, grynosios kainos, energijos balanso, mėnesio ir metinių suvestinių bei vizualizacijų pagrindu naudojant „ApexCharts“.
 
-Projektas sukurtas taip, kad būtų lengvai diegiamas, paprastai prižiūrimas ir aiškiai suprantamas kiekvienam Home Assistant naudotojui, naudojančiam elektros apskaitą pagal biržos kainą (NordPool).
+##SVARBU!!!
+Tai dar ne galutinė versija ir gali būti taisytinų vietų.
 
 ---
 
