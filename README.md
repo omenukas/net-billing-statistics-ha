@@ -51,7 +51,7 @@ homeassistant:
 
 ```
 Nepamirškite yaml failuose pakoreguoti pagal save inverterio sensorius. Mano pateiktuose koduose naudojami inverterio sensoriai:
-- 'sensor.solis_waveshare_meter_total_active_power`. Tai vienas sensorius, kurio teigiama reikšmė reiškia atidavimą į tinklą, o neigiama, kai perkama iš tinklo.
+- `sensor.solis_waveshare_meter_total_active_power`. Tai vienas sensorius, kurio teigiama reikšmė reiškia atidavimą į tinklą, o neigiama, kai perkama iš tinklo.
 - `sensor.nord_pool_lt_current_price`. Patikrinkite ar jis tikrai toks pas jus ir pakeisti jį į savo sensorių.
 Perkrauti Home Assistant.
 - į `dahboard.yaml` sudėtos visos statistikos kortelės.
