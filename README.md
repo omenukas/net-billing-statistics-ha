@@ -5,7 +5,7 @@
 Šis projektas skirtas pateikti išsamią „net billing“ elektros apskaitą Home Assistant aplinkoje:  
 pirkimo, pardavimo, grynosios kainos, energijos balanso, mėnesio ir metinių suvestinių bei vizualizacijų pagrindu naudojant „ApexCharts“.
 
-##SVARBU!!!
+## SVARBU!!! 
 Tai dar ne galutinė versija ir gali būti taisytinų vietų.
 
 ---
@@ -39,12 +39,18 @@ Tai dar ne galutinė versija ir gali būti taisytinų vietų.
   - importą rodo su **minuso ženklu**
   - eksportą rodo **be minuso**
 
+## Diegimas
+Home Assistant reikalavimai:
+ įdiegti [NordPool](https://www.home-assistant.io/integrations/nordpool/) integraciją.
+ iš HACS įdiegti [apexcharts-card](https://github.com/RomRider/apexcharts-card) 
+ NordPool kainų grafikui reikalingas templates.yaml, kuriame reikia dvejose vietose įrašyti savo `config_entry` reikšmes. Kaip gauti    `config_entry` reikšmes, rasite [čia:]([https://www.home-assistant.io/docs/tools/dev-tools/](https://www.creatingsmarthome.com/index.php/2025/09/12/home-assistant-migrating-to-the-official-nord-pool-integration/))
+
 ---
 
 ## 📁 Failų struktūra
 
 Projekte pateikiami keturi pagrindiniai failai:
-
+````
 net-billing-statistics-ha/
 ├── 02_charging_prices.yaml # pagrindinis Home Assistant paketų failas
 ├── templates.yaml # NordPool kainų templat'ai (šiandien / rytoj / su PVM)
