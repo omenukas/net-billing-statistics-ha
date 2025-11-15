@@ -1,6 +1,6 @@
 # Net Billing Statistics for Home Assistant
 
-![dashboard](dashboard.PNG)
+![dashboard](Dashboard.PNG)
 
 Šis projektas skirtas pateikti išsamią „net billing“ elektros apskaitą Home Assistant aplinkoje:  
 pirkimo, pardavimo, grynosios kainos, energijos balanso, mėnesio ir metinių suvestinių bei vizualizacijų pagrindu naudojant „ApexCharts“.
