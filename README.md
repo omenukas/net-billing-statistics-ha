@@ -61,10 +61,16 @@ Perkrauti Home Assistant.
 ## 📁 Failų struktūra
 
 Projekte pateikiami keturi pagrindiniai failai:
-````
+```
 net-billing-statistics-ha/
 ├── 02_charging_prices.yaml # pagrindinis Home Assistant paketų failas
 ├── templates.yaml # NordPool kainų templat'ai (šiandien / rytoj / su PVM)
 ├── dashboard.yaml # Lovelace skydelio (Dashboard) kodas su visomis kortelėmis
 ├── Dashboard.png # pavyzdinė skydelio ekrano nuotrauka
-└── README.md 
+└── README.md
+
+```
+
+<a href="https://buymeacoffee.com/omenukas">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="42">
+</a>
