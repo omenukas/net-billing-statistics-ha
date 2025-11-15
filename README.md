@@ -2,7 +2,7 @@
 
 ![dashboard](Dashboard.PNG)
 
-Šis projektas skirtas pateikti išsamią „net billing“ elektros apskaitą Home Assistant aplinkoje:  
+Šis projektas skirtas pateikti „net billing“ elektros apskaitą Home Assistant aplinkoje:  
 pirkimo, pardavimo, grynosios kainos, energijos balanso, mėnesio ir metinių suvestinių bei vizualizacijų pagrindu naudojant „ApexCharts“.
 
 ## SVARBU!!! 
