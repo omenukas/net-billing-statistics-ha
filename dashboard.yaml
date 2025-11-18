@@ -123,9 +123,11 @@ views:
                 title: Nustatymai
                 entities:
                   - entity: input_number.vat_percent
-                  - entity: input_number.dedamosios_buy_eur_kwh
                   - entity: input_number.dedamosios_sell_eur_kwh
-                  - entity: input_boolean.sell_same_as_buy
+                  - entity: input_number.dedamosios_buy_eur_kwh
+                  - entity: input_number.network_day_eur_kwh
+                  - entity: input_number.network_night_eur_kwh
+                  - entity: sensor.network_tariff_eur_per_kwh
       - type: grid
         cards:
           - type: vertical-stack
