@@ -1,5 +1,5 @@
 ###############################################################################
-# packages/02_charging_prices.yaml (FIX)
+# packages/02_charging_prices.yaml (FIX + network tariffs)
 ###############################################################################
 
 input_number:
@@ -12,6 +12,7 @@ input_number:
     mode: box
     icon: mdi:percent
     initial: 21
+
   dedamosios_buy_eur_kwh:
     name: Dedamosios pirkimui (€/kWh)
     min: -0.50
@@ -21,6 +22,7 @@ input_number:
     mode: box
     icon: mdi:plus-minus-variant
     initial: 0.0000
+
   dedamosios_sell_eur_kwh:
     name: Dedamosios pardavimui (€/kWh)
     min: -0.50
@@ -29,6 +31,27 @@ input_number:
     unit_of_measurement: "€/kWh"
     mode: box
     icon: mdi:plus-minus-variant
+    initial: 0.0000
+
+  # ---- NAUJA: tinklų dieninis / naktinis tarifas ----
+  network_day_eur_kwh:
+    name: Tinklų dieninis tarifas (€/kWh)
+    min: 0
+    max: 1
+    step: 0.0001
+    unit_of_measurement: "€/kWh"
+    mode: box
+    icon: mdi:weather-sunny
+    initial: 0.0000
+
+  network_night_eur_kwh:
+    name: Tinklų naktinis tarifas (€/kWh)
+    min: 0
+    max: 1
+    step: 0.0001
+    unit_of_measurement: "€/kWh"
+    mode: box
+    icon: mdi:weather-night
     initial: 0.0000
 
 input_boolean:
@@ -51,6 +74,42 @@ template:
         attributes:
           source_entity: sensor.nord_pool_lt_current_price
 
+      # ---- NAUJA: tinklų tarifas pagal laiką (diena/naktis, žiema/vasara, savaitgalis) ----
+      - name: "network_tariff_eur_per_kwh"
+        unique_id: network_tariff_eur_per_kwh
+        unit_of_measurement: "€/kWh"
+        state_class: measurement
+        icon: mdi:transmission-tower
+        state: >
+          {% set day = states('input_number.network_day_eur_kwh')|float(0) %}
+          {% set night = states('input_number.network_night_eur_kwh')|float(0) %}
+          {% set now_ = now() %}
+          {% set weekday = now_.weekday() %}  {# 0=Mon, 6=Sun #}
+          {% set hour = now_.hour %}
+          {% set is_weekend = weekday >= 5 %}
+          {% set is_summer = now_.dst().total_seconds() != 0 %}
+          {# Savaitgaliais visada naktinis #}
+          {% if is_weekend %}
+            {{ night }}
+          {% else %}
+            {# Darbo dienos #}
+            {% if is_summer %}
+              {# Vasara: naktinis 00:00–08:00 #}
+              {% if hour < 8 %}
+                {{ night }}
+              {% else %}
+                {{ day }}
+              {% endif %}
+            {% else %}
+              {# Žiema: naktinis 23:00–07:00 #}
+              {% if hour >= 23 or hour < 7 %}
+                {{ night }}
+              {% else %}
+                {{ day }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
       - name: "buy_price_eur_per_kwh"
         unique_id: buy_price_eur_per_kwh
         unit_of_measurement: "€/kWh"
@@ -60,7 +119,8 @@ template:
           {% set base = states('sensor.np_base_price_eur_per_kwh')|float(0) %}
           {% set vat  = states('input_number.vat_percent')|float(21) / 100 %}
           {% set add  = states('input_number.dedamosios_buy_eur_kwh')|float(0) %}
-          {{ base * (1 + vat) + add }}
+          {% set netw = states('sensor.network_tariff_eur_per_kwh')|float(0) %}
+          {{ base * (1 + vat) + add + netw }}
 
       - name: "sell_price_eur_per_kwh"
         unique_id: sell_price_eur_per_kwh
@@ -204,6 +264,7 @@ sensor:
     method: trapezoidal
     unit_time: h
     round: 3
+
   - platform: integration
     unique_id: export_energy_kwh
     name: Export Energy kWh
@@ -211,6 +272,7 @@ sensor:
     method: trapezoidal
     unit_time: h
     round: 3
+
   - platform: integration
     unique_id: import_cost_total_eur
     name: Import Cost Total EUR
@@ -218,6 +280,7 @@ sensor:
     method: trapezoidal
     unit_time: h
     round: 4
+
   - platform: integration
     unique_id: export_revenue_total_eur
     name: Export Revenue Total EUR
