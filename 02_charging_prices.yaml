@@ -133,7 +133,7 @@ template:
           {% else %}
             {% set base = states('sensor.np_base_price_eur_per_kwh')|float(0) %}
             {% set add  = states('input_number.dedamosios_sell_eur_kwh')|float(0) %}
-            {{ base + add }}
+            {{ base - add }}
           {% endif %}
 
       - name: "import_power_kw"
