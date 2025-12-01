@@ -21,7 +21,6 @@ input_number:
     unit_of_measurement: "€/kWh"
     mode: box
     icon: mdi:plus-minus-variant
-    initial: 0.0000
 
   dedamosios_sell_eur_kwh:
     name: Dedamosios pardavimui (€/kWh)
@@ -31,7 +30,6 @@ input_number:
     unit_of_measurement: "€/kWh"
     mode: box
     icon: mdi:plus-minus-variant
-    initial: 0.0000
 
   # ---- NAUJA: tinklų dieninis / naktinis tarifas ----
   network_day_eur_kwh:
@@ -42,7 +40,6 @@ input_number:
     unit_of_measurement: "€/kWh"
     mode: box
     icon: mdi:weather-sunny
-    initial: 0.0000
 
   network_night_eur_kwh:
     name: Tinklų naktinis tarifas (€/kWh)
@@ -52,7 +49,6 @@ input_number:
     unit_of_measurement: "€/kWh"
     mode: box
     icon: mdi:weather-night
-    initial: 0.0000
 
 input_boolean:
   sell_same_as_buy:
@@ -341,3 +337,4 @@ utility_meter:
     name: Export Energy Yearly
     source: sensor.export_energy
     cycle: yearly
+
